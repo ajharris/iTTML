@@ -5,15 +5,16 @@ import LyricsEditor from './components/LyricsEditor';
 import TTMLGenerator from './components/TTMLGenerator';
 
 function App() {
-  const [audioUrl, setAudioUrl] = useState(null); // Change mp3File to audioUrl
+  const [audioUrl, setAudioUrl] = useState(null);
   const [lyrics, setLyrics] = useState([]);
   const [markers, setMarkers] = useState([]);
   const [lyricsLinks, setLyricsLinks] = useState([]);
+  const [currentRegion, setCurrentRegion] = useState({ start: null, end: null });
 
   const handleUpload = (data) => {
     if (data.type === 'mp3') {
-      const url = URL.createObjectURL(data.file); // Create a URL for the audio file
-      setAudioUrl(url); // Set the audio URL
+      const url = URL.createObjectURL(data.file);
+      setAudioUrl(url);
     } else if (data.type === 'lyrics') {
       setLyrics(data.text.split('\n'));
     }
@@ -31,14 +32,15 @@ function App() {
     <div>
       <FileUploader onUpload={handleUpload} />
       {audioUrl && (
-        <AudioPlayer audioUrl={audioUrl} /> // Pass the audioUrl to AudioPlayer
+        <AudioPlayer audioUrl={audioUrl} setCurrentRegion={setCurrentRegion} currentRegion={currentRegion} />
       )}
       {lyrics.length > 0 && (
         <LyricsEditor 
           lyrics={lyrics} 
           markers={markers} 
+          currentRegion={currentRegion}
           onLink={handleLink} 
-          onMarkerAdd={handleMarkerAdd} // Pass down the marker add function
+          onMarkerAdd={handleMarkerAdd}
         />
       )}
       <TTMLGenerator markers={markers} lyricsLinks={lyricsLinks} />

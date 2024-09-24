@@ -89,6 +89,26 @@ const AudioPlayer = ({ audioUrl }) => {
         }
     }, [isPlaying, currentRegion]);
 
+    const handleWaveformClick = (event) => {
+        const boundingRect = waveformRef.current.getBoundingClientRect();
+        const x = event.clientX - boundingRect.left; // Mouse X position relative to the waveform
+        const duration = wavesurferRef.current.getDuration(); // Total duration of the audio
+        const progress = x / boundingRect.width; // Calculate progress ratio
+        const time = progress * duration; // Calculate time in seconds
+
+        wavesurferRef.current.play(time); // Start playback from clicked position
+        setIsPlaying(true);
+    };
+
+    useEffect(() => {
+        const waveformElement = waveformRef.current;
+        waveformElement.addEventListener('click', handleWaveformClick);
+        
+        return () => {
+            waveformElement.removeEventListener('click', handleWaveformClick);
+        };
+    }, []);
+
     useEffect(() => {
         const handleKeyPress = (event) => {
             if (event.code === 'Space') {
