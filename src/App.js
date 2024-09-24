@@ -5,14 +5,15 @@ import LyricsEditor from './components/LyricsEditor';
 import TTMLGenerator from './components/TTMLGenerator';
 
 function App() {
-  const [mp3File, setMp3File] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null); // Change mp3File to audioUrl
   const [lyrics, setLyrics] = useState([]);
   const [markers, setMarkers] = useState([]);
   const [lyricsLinks, setLyricsLinks] = useState([]);
 
   const handleUpload = (data) => {
     if (data.type === 'mp3') {
-      setMp3File(data.file);
+      const url = URL.createObjectURL(data.file); // Create a URL for the audio file
+      setAudioUrl(url); // Set the audio URL
     } else if (data.type === 'lyrics') {
       setLyrics(data.text.split('\n'));
     }
@@ -29,12 +30,18 @@ function App() {
   return (
     <div>
       <FileUploader onUpload={handleUpload} />
-      {mp3File && <AudioPlayer mp3File={mp3File} onMarkerAdd={handleMarkerAdd} />}
+      {audioUrl && (
+        <AudioPlayer audioUrl={audioUrl} /> // Pass the audioUrl to AudioPlayer
+      )}
       {lyrics.length > 0 && (
-        <LyricsEditor lyrics={lyrics} markers={markers} onLink={handleLink} />
+        <LyricsEditor 
+          lyrics={lyrics} 
+          markers={markers} 
+          onLink={handleLink} 
+          onMarkerAdd={handleMarkerAdd} // Pass down the marker add function
+        />
       )}
       <TTMLGenerator markers={markers} lyricsLinks={lyricsLinks} />
-      {/* <SimpleWaveform /> */}
     </div>
   );
 }

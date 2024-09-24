@@ -36,3 +36,14 @@
     transform: rotate(360deg);
   }
 }
+
+/* Force visibility and styling for regions */
+.waveform .wavesurfer-region {
+  position: absolute;
+  z-index: 2;
+  background-color: rgba(0, 123, 255, 0.3); /* Region background */
+  border: 1px solid rgba(0, 123, 255, 0.7);  /* Region border */
+  pointer-events: none;
+}
+
+

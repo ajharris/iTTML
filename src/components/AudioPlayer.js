@@ -1,153 +1,141 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-import RegionsPlugin from 'wavesurfer.js/src/plugin/regions';
+import Regions from 'wavesurfer.js/src/plugin/regions';
 
-const AudioPlayer = ({ mp3File }) => {
-  const [waveSurfer, setWaveSurfer] = useState(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [startMarker, setStartMarker] = useState(0);
-  const [endMarker, setEndMarker] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const waveformRef = useRef(null);
+const AudioPlayer = ({ audioUrl }) => {
+    const waveformRef = useRef(null);
+    const wavesurferRef = useRef(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [loopEnabled, setLoopEnabled] = useState(false);
+    const [currentRegion, setCurrentRegion] = useState(null);
 
-  useEffect(() => {
-    const ws = WaveSurfer.create({
-      container: waveformRef.current,
-      waveColor: 'violet',
-      progressColor: 'purple',
-      responsive: true,
-      plugins: [
-        RegionsPlugin.create({
-          regions: [],
-          dragSelection: false,
-        }),
-      ],
-    });
+    useEffect(() => {
+        wavesurferRef.current = WaveSurfer.create({
+            container: waveformRef.current,
+            waveColor: 'purple',
+            progressColor: 'orange',
+            plugins: [
+                Regions.create({
+                    dragSelection: true,
+                }),
+            ],
+        });
 
-    ws.load(URL.createObjectURL(mp3File));
+        if (audioUrl) {
+            wavesurferRef.current.load(audioUrl);
+        } else {
+            console.error("audioUrl is empty or undefined");
+        }
 
-    ws.on('ready', () => {
-      const duration = ws.getDuration();
-      setEndMarker(duration);
-      setStartMarker(0);
-      addRegion(0, duration); // Initially add the full duration region
-    });
+        return () => wavesurferRef.current.destroy();
+    }, [audioUrl]);
 
-    ws.on('audioprocess', () => {
-      setCurrentTime(ws.getCurrentTime());
-    });
+    useEffect(() => {
+        const handleRegionCreate = (region) => {
+            const existingRegions = wavesurferRef.current.regions.list;
+            for (const key in existingRegions) {
+                existingRegions[key].remove();
+            }
+            setCurrentRegion(region);
+            console.log(`Region created: Start: ${region.start.toFixed(2)}s, End: ${region.end.toFixed(2)}s`);
+        };
 
-    ws.on('region-updated', (region) => {
-      setStartMarker(region.start);
-      setEndMarker(region.end);
-    });
+        wavesurferRef.current.on('region-created', handleRegionCreate);
 
-    setWaveSurfer(ws);
+        const handleFinish = () => {
+            if (loopEnabled && currentRegion) {
+                wavesurferRef.current.play(currentRegion.start);
+            } else {
+                setIsPlaying(false);
+            }
+        };
 
-    return () => {
-      ws.destroy();
+        wavesurferRef.current.on('finish', handleFinish);
+
+        return () => {
+            wavesurferRef.current.un('region-created', handleRegionCreate);
+            wavesurferRef.current.un('finish', handleFinish);
+        };
+    }, [loopEnabled, currentRegion]);
+
+    useEffect(() => {
+        const handleAudioProcess = () => {
+            if (loopEnabled && currentRegion) {
+                const currentTime = wavesurferRef.current.getCurrentTime();
+                if (currentTime >= currentRegion.end) {
+                    wavesurferRef.current.play(currentRegion.start);
+                }
+            }
+        };
+
+        wavesurferRef.current.on('audioprocess', handleAudioProcess);
+
+        return () => {
+            wavesurferRef.current.un('audioprocess', handleAudioProcess);
+        };
+    }, [loopEnabled, currentRegion]);
+
+    const handlePlayPause = useCallback(() => {
+        if (isPlaying) {
+            wavesurferRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            if (currentRegion) {
+                wavesurferRef.current.play(currentRegion.start);
+            } else {
+                wavesurferRef.current.play();
+            }
+            setIsPlaying(true);
+        }
+    }, [isPlaying, currentRegion]);
+
+    useEffect(() => {
+        const handleKeyPress = (event) => {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                handlePlayPause();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [handlePlayPause]);
+
+    const toggleLoop = () => {
+        setLoopEnabled((prev) => !prev);
     };
-  }, [mp3File]);
 
-  const handleWaveformClick = (e) => {
-    if (waveSurfer) {
-      const waveformRect = waveformRef.current.getBoundingClientRect();
-      const clickX = e.clientX - waveformRect.left;
-      const clickTime = (clickX / waveformRect.width) * waveSurfer.getDuration();
+    useEffect(() => {
+        const updateWaveformColor = () => {
+            if (currentRegion && wavesurferRef.current) {
+                const currentTime = wavesurferRef.current.getCurrentTime();
+                if (currentTime >= currentRegion.start && currentTime <= currentRegion.end) {
+                    wavesurferRef.current.setWaveColor('orange');
+                } else {
+                    wavesurferRef.current.setWaveColor('purple');
+                }
+            }
+        };
 
-      // Only create a new region if the click is within bounds
-      if (clickTime >= 0 && clickTime <= waveSurfer.getDuration()) {
-        addRegion(clickTime, clickTime + 5); // Default loop duration of 5 seconds
-      }
-    }
-  };
+        const interval = setInterval(updateWaveformColor, 100);
 
-  const addRegion = (start, end) => {
-    // Clear existing regions
-    Object.values(waveSurfer.regions.list).forEach((region) => {
-      region.remove();
-    });
+        return () => clearInterval(interval);
+    }, [currentRegion]);
 
-    // Add a new region
-    const newRegion = waveSurfer.addRegion({
-      start,
-      end,
-      color: 'rgba(255, 0, 0, 0.5)',
-      id: 'loop-region',
-    });
-    setStartMarker(start);
-    setEndMarker(end);
-    
-    // Start playback at the new start position
-    if (isPlaying) {
-      waveSurfer.play(start, end);
-    }
-  };
-
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      waveSurfer.pause();
-    } else {
-      waveSurfer.play(startMarker, endMarker);
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleSeekForward = () => {
-    const newTime = currentTime + 0.25;
-    const duration = waveSurfer.getDuration();
-    if (duration > 0) {
-      const seekPosition = Math.min(newTime, duration);
-      waveSurfer.seekTo(seekPosition / duration);
-    }
-  };
-
-  const handleSeekBackward = () => {
-    const newTime = currentTime - 0.25;
-    const duration = waveSurfer.getDuration();
-    if (duration > 0) {
-      const seekPosition = Math.max(newTime, 0);
-      waveSurfer.seekTo(seekPosition / duration);
-    }
-  };
-
-  const handleStartMarkerDrag = (e) => {
-    const newStartTime = Math.max(0, parseFloat(e.target.value));
-    const duration = waveSurfer.getDuration();
-    if (newStartTime < endMarker) {
-      updateRegion(newStartTime, endMarker);
-    }
-  };
-
-  const handleEndMarkerDrag = (e) => {
-    const newEndTime = Math.min(waveSurfer.getDuration(), parseFloat(e.target.value));
-    if (newEndTime > startMarker) {
-      updateRegion(startMarker, newEndTime);
-    }
-  };
-
-  const updateRegion = (start, end) => {
-    const region = waveSurfer.regions.list['loop-region'];
-    if (region) {
-      region.update({ start, end });
-      setStartMarker(start);
-      setEndMarker(end);
-    }
-  };
-
-  return (
-    <div>
-      <div
-        ref={waveformRef}
-        onClick={handleWaveformClick}
-        style={{ cursor: 'pointer', height: '128px', position: 'relative' }}
-      />
-      <button onClick={handlePlayPause}>{isPlaying ? 'Pause' : 'Play'}</button>
-      <button onClick={handleSeekBackward}>Seek Back 0.25s</button>
-      <button onClick={handleSeekForward}>Seek Forward 0.25s</button>
-      <div>Current Time: {currentTime.toFixed(2)}s</div>
-    </div>
-  );
+    return (
+        <div>
+            <div ref={waveformRef} />
+            <button onClick={handlePlayPause}>{isPlaying ? 'Pause' : 'Play'}</button>
+            <button onClick={() => wavesurferRef.current.seekTo(Math.max(0, wavesurferRef.current.getCurrentTime() - 0.25))}>Shift Back 1/4s</button>
+            <button onClick={() => wavesurferRef.current.seekTo(Math.min(wavesurferRef.current.getDuration(), wavesurferRef.current.getCurrentTime() + 0.25))}>Shift Forward 1/4s</button>
+            <label>
+                <input type="checkbox" checked={loopEnabled} onChange={toggleLoop} />
+                Loop
+            </label>
+        </div>
+    );
 };
 
 export default AudioPlayer;
