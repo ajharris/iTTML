@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const LyricsEditor = ({ lyrics, markers, currentRegion, onMarkerAdd }) => {
-  // State to store start and end times for each line
   const [capturedTimes, setCapturedTimes] = useState(
     lyrics.map(() => ({ start: null, end: null }))
   );
@@ -27,7 +26,7 @@ const LyricsEditor = ({ lyrics, markers, currentRegion, onMarkerAdd }) => {
     const newTitleCommentStatus = [...isTitleComment];
     newTitleCommentStatus[lineIndex] = !newTitleCommentStatus[lineIndex];
     setIsTitleComment(newTitleCommentStatus);
-    // Optionally, clear captured times if the line is marked as a title/comment
+    // Clear captured times if marked as title/comment
     if (newTitleCommentStatus[lineIndex]) {
       const newCapturedTimes = [...capturedTimes];
       newCapturedTimes[lineIndex] = { start: null, end: null };

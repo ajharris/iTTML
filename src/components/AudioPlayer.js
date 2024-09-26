@@ -2,12 +2,11 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import Regions from 'wavesurfer.js/src/plugin/regions';
 
-const AudioPlayer = ({ audioUrl }) => {
+const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
     const waveformRef = useRef(null);
     const wavesurferRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [loopEnabled, setLoopEnabled] = useState(false);
-    const [currentRegion, setCurrentRegion] = useState(null);
 
     useEffect(() => {
         wavesurferRef.current = WaveSurfer.create({
@@ -23,8 +22,6 @@ const AudioPlayer = ({ audioUrl }) => {
 
         if (audioUrl) {
             wavesurferRef.current.load(audioUrl);
-        } else {
-            console.error("audioUrl is empty or undefined");
         }
 
         return () => wavesurferRef.current.destroy();
@@ -42,36 +39,26 @@ const AudioPlayer = ({ audioUrl }) => {
 
         wavesurferRef.current.on('region-created', handleRegionCreate);
 
-        const handleFinish = () => {
-            if (loopEnabled && currentRegion) {
-                wavesurferRef.current.play(currentRegion.start);
-            } else {
-                setIsPlaying(false);
-            }
-        };
-
-        wavesurferRef.current.on('finish', handleFinish);
-
         return () => {
             wavesurferRef.current.un('region-created', handleRegionCreate);
-            wavesurferRef.current.un('finish', handleFinish);
         };
-    }, [loopEnabled, currentRegion]);
+    }, [setCurrentRegion]);
 
     useEffect(() => {
-        const handleAudioProcess = () => {
+        const checkLoop = () => {
             if (loopEnabled && currentRegion) {
                 const currentTime = wavesurferRef.current.getCurrentTime();
                 if (currentTime >= currentRegion.end) {
-                    wavesurferRef.current.play(currentRegion.start);
+                    wavesurferRef.current.seekTo(currentRegion.start / wavesurferRef.current.getDuration());
+                    wavesurferRef.current.play(); // Restart playback at the start of the region
                 }
             }
         };
 
-        wavesurferRef.current.on('audioprocess', handleAudioProcess);
+        wavesurferRef.current.on('audioprocess', checkLoop);
 
         return () => {
-            wavesurferRef.current.un('audioprocess', handleAudioProcess);
+            wavesurferRef.current.un('audioprocess', checkLoop);
         };
     }, [loopEnabled, currentRegion]);
 
@@ -126,23 +113,6 @@ const AudioPlayer = ({ audioUrl }) => {
     const toggleLoop = () => {
         setLoopEnabled((prev) => !prev);
     };
-
-    useEffect(() => {
-        const updateWaveformColor = () => {
-            if (currentRegion && wavesurferRef.current) {
-                const currentTime = wavesurferRef.current.getCurrentTime();
-                if (currentTime >= currentRegion.start && currentTime <= currentRegion.end) {
-                    wavesurferRef.current.setWaveColor('orange');
-                } else {
-                    wavesurferRef.current.setWaveColor('purple');
-                }
-            }
-        };
-
-        const interval = setInterval(updateWaveformColor, 100);
-
-        return () => clearInterval(interval);
-    }, [currentRegion]);
 
     return (
         <div>

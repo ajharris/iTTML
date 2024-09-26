@@ -32,7 +32,11 @@ function App() {
     <div>
       <FileUploader onUpload={handleUpload} />
       {audioUrl && (
-        <AudioPlayer audioUrl={audioUrl} setCurrentRegion={setCurrentRegion} currentRegion={currentRegion} />
+        <AudioPlayer 
+          audioUrl={audioUrl} 
+          setCurrentRegion={setCurrentRegion} 
+          currentRegion={currentRegion} 
+        />
       )}
       {lyrics.length > 0 && (
         <LyricsEditor 
