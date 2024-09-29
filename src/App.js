@@ -28,6 +28,15 @@ function App() {
     setLyricsLinks((prevLinks) => [...prevLinks, { marker, lyric }]);
   };
 
+  // Export TTML file functionality
+  const handleExport = (ttmlContent) => {
+    const blob = new Blob([ttmlContent], { type: 'application/xml' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'lyrics.ttml';
+    link.click();
+  };
+
   return (
     <div>
       <FileUploader onUpload={handleUpload} />
@@ -45,6 +54,7 @@ function App() {
           currentRegion={currentRegion}
           onLink={handleLink} 
           onMarkerAdd={handleMarkerAdd}
+          onExport={handleExport} // Pass the export function to LyricsEditor
         />
       )}
       <TTMLGenerator markers={markers} lyricsLinks={lyricsLinks} />
