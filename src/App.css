@@ -1,7 +1,52 @@
+/* General App styles */
 .App {
   text-align: center;
 }
 
+/* Light mode specific styles */
+@media (prefers-color-scheme: light) {
+  body, .App {
+    background-color: #ffffff; /* Light mode background */
+  }
+
+  .App-header {
+    background-color: #f0f0f0; /* Light mode header */
+    color: black; /* Dark text for light mode */
+  }
+
+  .App-link {
+    color: #007bff; /* Blue links for light mode */
+  }
+
+  .waveform .wavesurfer-region {
+    background-color: rgba(0, 123, 255, 0.2); /* Light mode region background */
+    border: 1px solid rgba(0, 123, 255, 0.5);
+  }
+}
+
+/* Dark mode specific styles */
+@media (prefers-color-scheme: dark) {
+  body, .App {
+    background-color: #1c1c1c; /* Dark mode background */
+    color: white; /* Light text for dark mode */
+  }
+
+  .App-header {
+    background-color: #282c34; /* Dark mode header */
+    color: white; /* Light text for dark mode */
+  }
+
+  .App-link {
+    color: #61dafb; /* Blue links for dark mode */
+  }
+
+  .waveform .wavesurfer-region {
+    background-color: rgba(0, 123, 255, 0.3); /* Dark mode region background */
+    border: 1px solid rgba(0, 123, 255, 0.7);
+  }
+}
+
+/* Common styles */
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -13,21 +58,6 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -36,14 +66,3 @@
     transform: rotate(360deg);
   }
 }
-
-/* Force visibility and styling for regions */
-.waveform .wavesurfer-region {
-  position: absolute;
-  z-index: 2;
-  background-color: rgba(0, 123, 255, 0.3); /* Region background */
-  border: 1px solid rgba(0, 123, 255, 0.7);  /* Region border */
-  pointer-events: none;
-}
-
-

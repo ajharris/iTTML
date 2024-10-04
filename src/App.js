@@ -4,6 +4,8 @@ import AudioPlayer from './components/AudioPlayer';
 import LyricsEditor from './components/LyricsEditor';
 import TTMLGenerator from './components/TTMLGenerator';
 
+import './App.css';
+
 function App() {
   const [audioUrl, setAudioUrl] = useState(null);
   const [lyrics, setLyrics] = useState([]);
