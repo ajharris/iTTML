@@ -8,6 +8,7 @@ const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [loopEnabled, setLoopEnabled] = useState(false);
 
+    // Initialize wavesurfer and load audio
     useEffect(() => {
         wavesurferRef.current = WaveSurfer.create({
             container: waveformRef.current,
@@ -27,23 +28,25 @@ const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
         return () => wavesurferRef.current.destroy();
     }, [audioUrl]);
 
+    // Capture and handle the creation of regions
     useEffect(() => {
         const handleRegionCreate = (region) => {
             const existingRegions = wavesurferRef.current.regions.list;
             for (const key in existingRegions) {
                 existingRegions[key].remove(); // Remove any existing region
             }
-            setCurrentRegion(region); // Call setCurrentRegion to set the current region
+            setCurrentRegion(region);  
             console.log(`Region created: Start: ${region.start.toFixed(2)}s, End: ${region.end.toFixed(2)}s`);
         };
-    
+
         wavesurferRef.current.on('region-created', handleRegionCreate);
-    
+
         return () => {
             wavesurferRef.current.un('region-created', handleRegionCreate);
         };
     }, [setCurrentRegion]);
-    
+
+    // Check and manage the loop functionality
     useEffect(() => {
         const checkLoop = () => {
             if (loopEnabled && currentRegion) {
@@ -62,6 +65,7 @@ const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
         };
     }, [loopEnabled, currentRegion]);
 
+    // Handle play/pause functionality
     const handlePlayPause = useCallback(() => {
         if (isPlaying) {
             wavesurferRef.current.pause();
@@ -76,56 +80,18 @@ const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
         }
     }, [isPlaying, currentRegion]);
 
-    const handleWaveformClick = (event) => {
-        const boundingRect = waveformRef.current.getBoundingClientRect();
-        const x = event.clientX - boundingRect.left; // Mouse X position relative to the waveform
-        const duration = wavesurferRef.current.getDuration(); // Total duration of the audio
-        const progress = x / boundingRect.width; // Calculate progress ratio
-        const time = progress * duration; // Calculate time in seconds
-
-        wavesurferRef.current.play(time); // Start playback from clicked position
-        setIsPlaying(true);
-    };
-
-    useEffect(() => {
-        const waveformElement = waveformRef.current;
-        waveformElement.addEventListener('click', handleWaveformClick);
-        
-        return () => {
-            waveformElement.removeEventListener('click', handleWaveformClick);
-        };
-    }, []);
-
-    useEffect(() => {
-        const handleKeyPress = (event) => {
-            if (event.code === 'Space') {
-                // Check if the active element is a text field, where the space bar should act normally
-                const activeElement = document.activeElement;
-                const isInTextField = activeElement.tagName === 'INPUT' || 
-                                      activeElement.tagName === 'TEXTAREA' || 
-                                      activeElement.isContentEditable;
-                if (!isInTextField) {
-                    event.preventDefault(); // Prevent default scrolling behavior
-                    handlePlayPause();
-                }
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyPress);
-        return () => {
-            window.removeEventListener('keydown', handleKeyPress);
-        };
-    }, [handlePlayPause]);
-
+    // Toggle the loop functionality
     const toggleLoop = () => {
         setLoopEnabled((prev) => !prev);
     };
 
+    // Handle shifting playback backward by 1/4 second
     const shiftBackward = () => {
         const newTime = Math.max(0, wavesurferRef.current.getCurrentTime() - 0.25);
         wavesurferRef.current.seekTo(newTime / wavesurferRef.current.getDuration());
     };
 
+    // Handle shifting playback forward by 1/4 second
     const shiftForward = () => {
         const newTime = Math.min(wavesurferRef.current.getDuration(), wavesurferRef.current.getCurrentTime() + 0.25);
         wavesurferRef.current.seekTo(newTime / wavesurferRef.current.getDuration());
