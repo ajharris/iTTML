@@ -8,8 +8,11 @@ function App() {
   const [audioUrl, setAudioUrl] = useState(null);
   const [lyrics, setLyrics] = useState([]);
   const [markers, setMarkers] = useState([]);
-  const [lyricsLinks, setLyricsLinks] = useState([]);
-  const [currentRegion, setCurrentRegion] = useState({ start: null, end: null });
+  const [songTitle, setSongTitle] = useState('');
+  const [agentName, setAgentName] = useState('');
+  const [lineTypes, setLineTypes] = useState([]);
+  const [currentRegion, setCurrentRegion] = useState(null);
+  const [capturedTimes, setCapturedTimes] = useState([]); // Reintroduce capturedTimes
 
   const handleUpload = (data) => {
     if (data.type === 'mp3') {
@@ -17,24 +20,12 @@ function App() {
       setAudioUrl(url);
     } else if (data.type === 'lyrics') {
       setLyrics(data.text.split('\n'));
+      setCapturedTimes(data.text.split('\n').map(() => ({ start: null, end: null }))); // Initialize times
     }
   };
 
   const handleMarkerAdd = (marker) => {
     setMarkers((prevMarkers) => [...prevMarkers, marker]);
-  };
-
-  const handleLink = (marker, lyric) => {
-    setLyricsLinks((prevLinks) => [...prevLinks, { marker, lyric }]);
-  };
-
-  // Export TTML file functionality
-  const handleExport = (ttmlContent) => {
-    const blob = new Blob([ttmlContent], { type: 'application/xml' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'lyrics.ttml';
-    link.click();
   };
 
   return (
@@ -49,15 +40,29 @@ function App() {
       )}
       {lyrics.length > 0 && (
         <LyricsEditor 
-          lyrics={lyrics} 
-          markers={markers} 
-          currentRegion={currentRegion}
-          onLink={handleLink} 
-          onMarkerAdd={handleMarkerAdd}
-          onExport={handleExport} // Pass the export function to LyricsEditor
+        lyrics={lyrics} 
+        markers={markers} 
+        capturedTimes={capturedTimes} 
+        setCapturedTimes={setCapturedTimes} 
+        setSongTitle={setSongTitle} 
+        setAgentName={setAgentName} 
+        setLineTypes={setLineTypes}
+        onMarkerAdd={handleMarkerAdd} 
+        agentName={agentName} 
+        currentRegion={currentRegion}  // Pass currentRegion here
+      />
+      
+      )}
+
+      {lyrics.length > 0 && (
+        <TTMLGenerator 
+          lyrics={lyrics}
+          capturedTimes={capturedTimes} // Pass captured times to TTML generator
+          songTitle={songTitle}
+          agentName={agentName}
+          lineTypes={lineTypes}
         />
       )}
-      <TTMLGenerator markers={markers} lyricsLinks={lyricsLinks} />
     </div>
   );
 }

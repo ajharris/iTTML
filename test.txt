@@ -1,0 +1,112 @@
+
+> mp3-ttml-generator@0.1.0 test
+> jest --silent
+
+FAIL src/components/FileUploader.test.js
+  ● Test suite failed to run
+
+    Cannot find module '@testing-library/jest-dom/extend-expect' from 'src/setupTests.js'
+
+    > 1 | import '@testing-library/jest-dom/extend-expect'; // Jest DOM extensions
+        | ^
+      2 |
+      3 | // Mock WaveSurfer globally
+      4 | jest.mock('wavesurfer.js', () => {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at Object.<anonymous> (src/setupTests.js:1:1)
+
+(node:66361) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL src/components/SongMetadata.test.js
+  ● Test suite failed to run
+
+    Cannot find module '@testing-library/jest-dom/extend-expect' from 'src/setupTests.js'
+
+    > 1 | import '@testing-library/jest-dom/extend-expect'; // Jest DOM extensions
+        | ^
+      2 |
+      3 | // Mock WaveSurfer globally
+      4 | jest.mock('wavesurfer.js', () => {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at Object.<anonymous> (src/setupTests.js:1:1)
+
+FAIL src/App.test.js
+  ● Test suite failed to run
+
+    Cannot find module '@testing-library/jest-dom/extend-expect' from 'src/setupTests.js'
+
+    > 1 | import '@testing-library/jest-dom/extend-expect'; // Jest DOM extensions
+        | ^
+      2 |
+      3 | // Mock WaveSurfer globally
+      4 | jest.mock('wavesurfer.js', () => {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at Object.<anonymous> (src/setupTests.js:1:1)
+
+(node:66359) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL src/components/AudioPlayer.test.js
+  ● Test suite failed to run
+
+    Cannot find module '@testing-library/jest-dom/extend-expect' from 'src/setupTests.js'
+
+    > 1 | import '@testing-library/jest-dom/extend-expect'; // Jest DOM extensions
+        | ^
+      2 |
+      3 | // Mock WaveSurfer globally
+      4 | jest.mock('wavesurfer.js', () => {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at Object.<anonymous> (src/setupTests.js:1:1)
+
+(node:66362) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL src/components/LyricsEditor.test.js
+  ● Test suite failed to run
+
+    Cannot find module '@testing-library/jest-dom/extend-expect' from 'src/setupTests.js'
+
+    > 1 | import '@testing-library/jest-dom/extend-expect'; // Jest DOM extensions
+        | ^
+      2 |
+      3 | // Mock WaveSurfer globally
+      4 | jest.mock('wavesurfer.js', () => {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at Object.<anonymous> (src/setupTests.js:1:1)
+
+FAIL src/components/LineRow.test.js
+  ● Test suite failed to run
+
+    Cannot find module '@testing-library/jest-dom/extend-expect' from 'src/setupTests.js'
+
+    > 1 | import '@testing-library/jest-dom/extend-expect'; // Jest DOM extensions
+        | ^
+      2 |
+      3 | // Mock WaveSurfer globally
+      4 | jest.mock('wavesurfer.js', () => {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at Object.<anonymous> (src/setupTests.js:1:1)
+
+FAIL src/components/TTMLGenerator.test.js
+  ● Test suite failed to run
+
+    Cannot find module '@testing-library/jest-dom/extend-expect' from 'src/setupTests.js'
+
+    > 1 | import '@testing-library/jest-dom/extend-expect'; // Jest DOM extensions
+        | ^
+      2 |
+      3 | // Mock WaveSurfer globally
+      4 | jest.mock('wavesurfer.js', () => {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at Object.<anonymous> (src/setupTests.js:1:1)
+
+Test Suites: 7 failed, 7 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        10.988 s

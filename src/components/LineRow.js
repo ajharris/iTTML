@@ -3,28 +3,35 @@ import React from 'react';
 const LineRow = ({
   line,
   lineIndex,
-  capturedTimes,
-  lineTypes,
+  capturedTimes = [], 
   handleCaptureRegion,
   handleLineTypeChange,
-  songPartTimes,
+  lineTypes = [],      
   titleLineIndex
 }) => {
+  const capturedTime = capturedTimes[lineIndex] || { start: null, end: null };
+
   return (
     <tr>
-      <td>{line}</td>
+      <td>
+        {lineTypes[lineIndex] === "Title" && titleLineIndex === lineIndex ? (
+          <strong>{line}</strong> 
+        ) : (
+          line
+        )}
+      </td>
       <td>
         {lineTypes[lineIndex] === "Lyric" && (
           <button onClick={() => handleCaptureRegion(lineIndex)}>Capture Start and End</button>
         )}
       </td>
-      <td>{capturedTimes[lineIndex].start !== null ? capturedTimes[lineIndex].start.toFixed(2) : '-'}</td>
-      <td>{capturedTimes[lineIndex].end !== null ? capturedTimes[lineIndex].end.toFixed(2) : '-'}</td>
+      <td>{capturedTime.start !== null ? capturedTime.start.toFixed(2) : '-'}</td>
+      <td>{capturedTime.end !== null ? capturedTime.end.toFixed(2) : '-'}</td>
       <td>
         <select
-          value={lineTypes[lineIndex]}
-          onChange={(event) => handleLineTypeChange(lineIndex, event.target.value)} // Corrected: passing event properly
-          disabled={titleLineIndex !== null && titleLineIndex !== lineIndex && lineTypes[lineIndex] === "Title"} // Disable title selection if a title exists
+          value={lineTypes[lineIndex] || "Lyric"}
+          onChange={(event) => handleLineTypeChange(lineIndex, event.target.value)}
+          disabled={titleLineIndex !== null && titleLineIndex !== lineIndex && lineTypes[lineIndex] === "Title"}
         >
           <option value="Lyric">Lyric</option>
           <option value="Title">Title</option>
@@ -34,12 +41,6 @@ const LineRow = ({
           <option value="Bridge">Bridge</option>
           <option value="Outro">Outro</option>
         </select>
-      </td>
-      <td>
-        {["Verse", "Chorus", "Bridge", "Outro"].includes(lineTypes[lineIndex]) &&
-          songPartTimes[lineIndex] && songPartTimes[lineIndex].start !== null && songPartTimes[lineIndex].end !== null ? (
-            `${songPartTimes[lineIndex].start.toFixed(2)}s - ${songPartTimes[lineIndex].end.toFixed(2)}s`
-          ) : '-'}
       </td>
     </tr>
   );

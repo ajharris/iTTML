@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 function FileUploader({ onUpload }) {
-  const [mp3File, setMp3File] = useState(null);
-  const [lyricsFile, setLyricsFile] = useState(null);
-
   const handleMp3Change = (e) => {
     const file = e.target.files[0];
     if (file && (file.type === 'audio/mpeg' || file.type === 'audio/mp3')) {
-      setMp3File(file);
       onUpload({ type: 'mp3', file });
       e.target.value = ''; // Clear the input
     } else {
@@ -18,7 +14,6 @@ function FileUploader({ onUpload }) {
   const handleLyricsChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type === 'text/plain') {
-      setLyricsFile(file);
       const reader = new FileReader();
       reader.onload = () => {
         onUpload({ type: 'lyrics', text: reader.result });
@@ -37,7 +32,7 @@ function FileUploader({ onUpload }) {
         <input 
           id="mp3-upload" 
           type="file" 
-          accept="audio/*" // Changed to allow all audio types
+          accept="audio/*" 
           onChange={handleMp3Change} 
         />
       </div>
@@ -46,7 +41,7 @@ function FileUploader({ onUpload }) {
         <input 
           id="lyrics-upload" 
           type="file" 
-          accept=".txt" // Updated to accept .txt extension
+          accept=".txt" 
           onChange={handleLyricsChange} 
         />
       </div>

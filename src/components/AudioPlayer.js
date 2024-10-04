@@ -31,19 +31,19 @@ const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
         const handleRegionCreate = (region) => {
             const existingRegions = wavesurferRef.current.regions.list;
             for (const key in existingRegions) {
-                existingRegions[key].remove();
+                existingRegions[key].remove(); // Remove any existing region
             }
-            setCurrentRegion(region);
+            setCurrentRegion(region); // Call setCurrentRegion to set the current region
             console.log(`Region created: Start: ${region.start.toFixed(2)}s, End: ${region.end.toFixed(2)}s`);
         };
-
+    
         wavesurferRef.current.on('region-created', handleRegionCreate);
-
+    
         return () => {
             wavesurferRef.current.un('region-created', handleRegionCreate);
         };
     }, [setCurrentRegion]);
-
+    
     useEffect(() => {
         const checkLoop = () => {
             if (loopEnabled && currentRegion) {
@@ -99,8 +99,15 @@ const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
     useEffect(() => {
         const handleKeyPress = (event) => {
             if (event.code === 'Space') {
-                event.preventDefault();
-                handlePlayPause();
+                // Check if the active element is a text field, where the space bar should act normally
+                const activeElement = document.activeElement;
+                const isInTextField = activeElement.tagName === 'INPUT' || 
+                                      activeElement.tagName === 'TEXTAREA' || 
+                                      activeElement.isContentEditable;
+                if (!isInTextField) {
+                    event.preventDefault(); // Prevent default scrolling behavior
+                    handlePlayPause();
+                }
             }
         };
 
@@ -114,12 +121,22 @@ const AudioPlayer = ({ audioUrl, setCurrentRegion, currentRegion }) => {
         setLoopEnabled((prev) => !prev);
     };
 
+    const shiftBackward = () => {
+        const newTime = Math.max(0, wavesurferRef.current.getCurrentTime() - 0.25);
+        wavesurferRef.current.seekTo(newTime / wavesurferRef.current.getDuration());
+    };
+
+    const shiftForward = () => {
+        const newTime = Math.min(wavesurferRef.current.getDuration(), wavesurferRef.current.getCurrentTime() + 0.25);
+        wavesurferRef.current.seekTo(newTime / wavesurferRef.current.getDuration());
+    };
+
     return (
         <div>
             <div ref={waveformRef} />
             <button onClick={handlePlayPause}>{isPlaying ? 'Pause' : 'Play'}</button>
-            <button onClick={() => wavesurferRef.current.seekTo(Math.max(0, wavesurferRef.current.getCurrentTime() - 0.25))}>Shift Back 1/4s</button>
-            <button onClick={() => wavesurferRef.current.seekTo(Math.min(wavesurferRef.current.getDuration(), wavesurferRef.current.getCurrentTime() + 0.25))}>Shift Forward 1/4s</button>
+            <button onClick={shiftBackward}>Shift Back 1/4s</button>
+            <button onClick={shiftForward}>Shift Forward 1/4s</button>
             <label>
                 <input type="checkbox" checked={loopEnabled} onChange={toggleLoop} />
                 Loop
